@@ -27,7 +27,7 @@ jobs:
       - name: Install System Dependencies (libGL for OpenCV)
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgl1-mesa-glx libglib2.0-0
+          sudo apt-get install -y --no-install-recommends libgl1 libglib2.0-0 || sudo apt-get install -y --no-install-recommends libgl1
 
       - name: Install Python Dependencies
         run: |
@@ -39,10 +39,14 @@ jobs:
           python backend/models/download_models.py
 
       - name: Seed Demonstration Data
+        env:
+          PYTHONPATH: backend
         run: |
           python backend/scripts/seed_demo_data.py
 
       - name: Run Automated Pytest Suite
+        env:
+          PYTHONPATH: backend
         run: |
           python -m pytest backend/tests -v
 
