@@ -1,0 +1,17 @@
+# ==============================================================================
+# Netlify Configuration (Frontend Subdirectory)
+# Handles deployment when Base Directory is set to "frontend"
+# ==============================================================================
+
+[build]
+  publish = "dist"
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# SPA Fallback for client-side routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

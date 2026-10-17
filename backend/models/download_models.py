@@ -19,7 +19,7 @@ MODELS = {
     },
     "face_recognition_sface_2021dec.onnx": {
         "url": "https://media.githubusercontent.com/media/opencv/opencv_zoo/main/models/face_recognition_sface/face_recognition_sface_2021dec.onnx",
-        "expected_sha256": None,  # Verified size ~38.7 MB
+        "expected_sha256": "0ba9fbfa01b5270c96627c4ef784da859931e02f04419c829e83484087c34e79",
         "description": "SFace Face Recognition Model (ONNX)",
     },
 }
