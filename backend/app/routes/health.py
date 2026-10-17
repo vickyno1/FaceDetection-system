@@ -6,14 +6,14 @@ Public endpoint for liveness probes, model diagnostics, and deployment verificat
 from datetime import datetime, timezone
 from flask import Blueprint, current_app
 from ..utils.responses import success_response
-from ..extensions import face_detector, face_recognizer
+from .. import extensions
 
 health_bp = Blueprint("health", __name__, url_prefix="/api")
 
 @health_bp.route("/health", methods=["GET"])
 def health_check():
-    yunet_ok = face_detector is not None and face_detector.detector is not None
-    sface_ok = face_recognizer is not None and face_recognizer.recognizer is not None
+    yunet_ok = extensions.face_detector is not None and extensions.face_detector.detector is not None
+    sface_ok = extensions.face_recognizer is not None and extensions.face_recognizer.recognizer is not None
     mock_mode = current_app.config.get("MOCK_FIREBASE", True)
 
     status_data = {

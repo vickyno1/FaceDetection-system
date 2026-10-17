@@ -26,13 +26,23 @@ attendance_service = None
 def init_app(app):
     global face_detector, face_recognizer, student_repository, attendance_repository, student_service, attendance_service
 
-    # Initialize Face Detection & Recognition
     yunet_path = app.config.get("YUNET_MODEL_PATH")
     sface_path = app.config.get("SFACE_MODEL_PATH")
     conf_thresh = app.config.get("FACE_DETECTION_CONFIDENCE", 0.80)
     sim_thresh = app.config.get("FACE_SIMILARITY_THRESHOLD", 0.380)
     margin = app.config.get("FACE_MATCH_MARGIN", 0.080)
 
+    # Auto-download models if missing (e.g. freshly cloned repository)
+    if not (yunet_path and Path(yunet_path).exists() and sface_path and Path(sface_path).exists()):
+        try:
+            from ..models.download_models import download_models
+            model_dir = str(app.config.get("MODEL_DIR", Path(__file__).resolve().parent.parent / "models"))
+            app.logger.info(f"Pretrained ONNX models missing. Auto-downloading into {model_dir}...")
+            download_models(model_dir)
+        except Exception as e:
+            app.logger.warning(f"Could not auto-download models: {e}. Run 'python backend/models/download_models.py' manually.")
+
+    # Initialize Face Detection & Recognition
     try:
         face_detector = FaceDetector(model_path=str(yunet_path), conf_threshold=conf_thresh)
         app.logger.info("FaceDetector (YuNet) initialized successfully.")

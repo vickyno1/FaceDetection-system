@@ -124,3 +124,15 @@ def test_face_detector_blur_computation():
     textured = (np.random.RandomState(42).rand(100, 100, 3) * 255).astype(np.uint8)
     tex_score = detector.compute_blur_score(textured)
     assert tex_score > 50.0
+
+def test_detector_model_inference_on_blank():
+    from app.config import Config
+    if Config.YUNET_MODEL_PATH.exists():
+        detector = FaceDetector(model_path=str(Config.YUNET_MODEL_PATH))
+        blank = np.zeros((320, 320, 3), dtype=np.uint8)
+        faces = detector.detect_faces(blank)
+        assert len(faces) == 0
+        val = detector.validate_for_enrollment(blank)
+        assert val["valid"] is False
+        assert val["error_code"] == "NO_FACE_DETECTED"
+

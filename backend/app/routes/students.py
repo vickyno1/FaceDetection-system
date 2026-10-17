@@ -7,7 +7,7 @@ from flask import Blueprint, request
 from ..middleware.auth import require_auth
 from ..utils.responses import success_response, error_response
 from ..utils.validators import validate_student_data, validate_student_id
-from ..extensions import student_service
+from .. import extensions
 
 students_bp = Blueprint("students", __name__, url_prefix="/api/students")
 
@@ -20,7 +20,7 @@ def list_students():
     page = int(request.args.get("page", 1))
     limit = int(request.args.get("limit", 50))
 
-    students = student_service.list_students(department=dept, status=status, search=search)
+    students = extensions.student_service.list_students(department=dept, status=status, search=search)
     total = len(students)
 
     # Simple pagination
@@ -54,7 +54,7 @@ def create_student():
 
     actor_uid = getattr(request, "user", {}).get("uid", "admin")
     try:
-        student = student_service.create_student(sanitized, actor_uid=actor_uid)
+        student = extensions.student_service.create_student(sanitized, actor_uid=actor_uid)
         return success_response(
             data=student,
             message="Student created successfully.",
@@ -80,7 +80,7 @@ def get_student(student_id):
     if not valid:
         return error_response(message=clean_id, error_code="INVALID_ID", status_code=400)
 
-    student = student_service.get_student(clean_id)
+    student = extensions.student_service.get_student(clean_id)
     if not student:
         return error_response(
             message=f"Student with ID '{clean_id}' not found.",
@@ -107,7 +107,7 @@ def update_student(student_id):
         )
 
     actor_uid = getattr(request, "user", {}).get("uid", "admin")
-    updated = student_service.update_student(clean_id, sanitized, actor_uid=actor_uid)
+    updated = extensions.student_service.update_student(clean_id, sanitized, actor_uid=actor_uid)
     if not updated:
         return error_response(
             message=f"Student with ID '{clean_id}' not found.",
@@ -125,7 +125,7 @@ def delete_student(student_id):
         return error_response(message=clean_id, error_code="INVALID_ID", status_code=400)
 
     actor_uid = getattr(request, "user", {}).get("uid", "admin")
-    success = student_service.deactivate_student(clean_id, actor_uid=actor_uid)
+    success = extensions.student_service.deactivate_student(clean_id, actor_uid=actor_uid)
     if not success:
         return error_response(
             message=f"Student with ID '{clean_id}' not found.",
@@ -164,7 +164,7 @@ def enroll_face(student_id):
         )
 
     actor_uid = getattr(request, "user", {}).get("uid", "admin")
-    enroll_result = student_service.enroll_face(
+    enroll_result = extensions.student_service.enroll_face(
         student_id=clean_id,
         image_b64_list=images,
         consent=consent,
@@ -192,7 +192,7 @@ def delete_face_template(student_id):
         return error_response(message=clean_id, error_code="INVALID_ID", status_code=400)
 
     actor_uid = getattr(request, "user", {}).get("uid", "admin")
-    success = student_service.delete_face_template(clean_id, actor_uid=actor_uid)
+    success = extensions.student_service.delete_face_template(clean_id, actor_uid=actor_uid)
     if not success:
         return error_response(
             message=f"Student with ID '{clean_id}' not found.",

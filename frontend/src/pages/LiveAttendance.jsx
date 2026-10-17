@@ -83,6 +83,8 @@ export default function LiveAttendance() {
         setStatusMessage('No face detected. Please stand in front of the camera.');
       } else if (data.result === 'MULTIPLE_FACES') {
         setStatusMessage('Multiple faces detected. Please scan one person at a time.');
+      } else if (data.result === 'NO_ENROLLED_STUDENTS') {
+        setStatusMessage('No enrolled students in the database. Please enroll students first.');
       } else {
         setStatusMessage(data.message || 'Face recognition unconfirmed.');
       }

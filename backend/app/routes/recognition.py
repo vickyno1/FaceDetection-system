@@ -6,7 +6,7 @@ Handles camera frame recognition, identity resolution, and attendance recording.
 from flask import Blueprint, request
 from ..middleware.auth import require_auth
 from ..utils.responses import success_response, error_response
-from ..extensions import attendance_service
+from .. import extensions
 
 recognition_bp = Blueprint("recognition", __name__, url_prefix="/api/recognition")
 
@@ -30,7 +30,7 @@ def identify_face():
     mark_attendance = payload.get("mark_attendance", True)
     actor_uid = getattr(request, "user", {}).get("uid", "terminal")
 
-    result = attendance_service.identify_and_mark(
+    result = extensions.attendance_service.identify_and_mark(
         image_b64=image_b64,
         session_id=session_id,
         mark_attendance=mark_attendance,
@@ -62,7 +62,7 @@ def identify_face():
             status_code=200
         )
 
-    # Multiple faces or no face
+    # Multiple faces, no face, or no enrolled templates
     if result_type in ("NO_FACE_DETECTED", "MULTIPLE_FACES", "NO_ENROLLED_STUDENTS"):
         return success_response(
             data=result,

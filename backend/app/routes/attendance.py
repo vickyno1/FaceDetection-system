@@ -8,14 +8,14 @@ from flask import Blueprint, request, Response
 from ..middleware.auth import require_auth
 from ..utils.responses import success_response, error_response
 from ..utils.validators import validate_date_str, validate_student_id
-from ..extensions import attendance_service
+from .. import extensions
 
 attendance_bp = Blueprint("attendance", __name__, url_prefix="/api")
 
 @attendance_bp.route("/dashboard", methods=["GET"])
 @require_auth(require_admin=True)
 def get_dashboard():
-    data = attendance_service.get_dashboard_metrics()
+    data = extensions.attendance_service.get_dashboard_metrics()
     return success_response(data=data, message="Dashboard metrics retrieved.")
 
 @attendance_bp.route("/attendance", methods=["GET"])
@@ -49,7 +49,7 @@ def list_attendance():
             return error_response(message=f"Invalid end_date: {res}", error_code="INVALID_DATE", status_code=400)
         end_date = res
 
-    records = attendance_service.get_attendance_records(
+    records = extensions.attendance_service.get_attendance_records(
         student_id=student_id,
         date=date,
         start_date=start_date,
@@ -101,7 +101,7 @@ def mark_manual_attendance():
         )
 
     actor_uid = getattr(request, "user", {}).get("uid", "admin")
-    result = attendance_service.mark_manual(
+    result = extensions.attendance_service.mark_manual(
         student_id=clean_id,
         date=clean_date,
         session_id=session_id,
@@ -132,11 +132,11 @@ def get_attendance_summary():
             return error_response(message=res, error_code="INVALID_DATE", status_code=400)
         date = res
     else:
-        date = attendance_service._get_current_date()
+        date = extensions.attendance_service._get_current_date()
 
-    all_students = attendance_service.student_repo.list_students()
+    all_students = extensions.attendance_service.student_repo.list_students()
     active_students = [s for s in all_students if s.get("status") == "active"]
-    summary = attendance_service.attendance_repo.get_today_summary(date, len(active_students))
+    summary = extensions.attendance_service.attendance_repo.get_today_summary(date, len(active_students))
     return success_response(data=summary, message="Attendance summary retrieved.")
 
 @attendance_bp.route("/attendance/export", methods=["GET"])
@@ -166,7 +166,7 @@ def export_attendance_csv():
             return error_response(message=res, error_code="INVALID_DATE", status_code=400)
         end_date = res
 
-    csv_data = attendance_service.generate_csv_export(
+    csv_data = extensions.attendance_service.generate_csv_export(
         date=date,
         start_date=start_date,
         end_date=end_date,
