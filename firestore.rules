@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.admin == true ||
+        request.auth.token.role == 'admin'
+      );
+    }
+
+    // Students Collection
+    // Note: The Firebase Admin SDK running on the backend completely bypasses these security rules.
+    // These rules strictly govern direct client-side Web/Mobile SDK requests.
+    match /students/{studentId} {
+      // Direct client SDK reads are restricted.
+      // Crucially, direct client reads of the sensitive 'face_template' field are explicitly blocked.
+      allow read: if isAdmin() && !('face_template' in resource.data);
+      
+      // All writes to student profiles and biometric templates MUST go through the backend API.
+      // Direct client SDK creation, updates, and deletes are denied.
+      allow create, update, delete: if false;
+    }
+
+    // Attendance Collection
+    match /attendance/{attendanceId} {
+      // Authorized administrative readers can view records directly if permitted
+      allow read: if isAdmin();
+      
+      // Direct client SDK attendance recording is denied.
+      // The backend API is authoritative for validating face recognition matches and recording attendance.
+      allow create, update, delete: if false;
+    }
+
+    // Audit Logs Collection
+    match /audit_logs/{logId} {
+      // Append-only via backend Admin SDK; no direct client mutations allowed
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // Default deny-all for any unmapped collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
